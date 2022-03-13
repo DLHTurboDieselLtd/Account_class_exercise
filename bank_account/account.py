@@ -58,7 +58,8 @@ class Account:
                 account_number, 
                 account_holder, 
                 opening_balance, 
-                account_type) -> None:
+                account_type,
+                transaction) -> None:
 
         if not isinstance(account_number, str):
             raise TypeError(f"Invalid account number. Account number must of type string.")
@@ -84,6 +85,8 @@ class Account:
         self.account_holder   = account_holder
         self._opening_balance = opening_balance
         self.account_type     = account_type
+        self.transaction      = transaction
+        self._index           = 0
 
     def __str__(self) -> str:
         return f"Account[{self.account_number}] - {self.account_holder}, {self.account_type} account = {self._opening_balance}"
@@ -91,6 +94,17 @@ class Account:
     def __repr__(self) -> str:
         return f"Account('{self.account_number}', '{self.account_holder}', {self._opening_balance}, '{self.account_type}')"
 
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._index < len(self.transaction):
+            result = self.transaction[self._index]
+            self._index += 1
+            return result
+        else:
+            raise StopIteration
+        
     @timer
     def deposit(self, amount: int) -> None:
         if isinstance(amount, int) & (amount > 0):
@@ -117,8 +131,8 @@ class CurrentAccount(Account):
 
     """A subclass to represent a current account"""
 
-    def __init__(self, account_number, account_holder, opening_balance, overdraft_limit) -> None:
-        super().__init__(account_number, account_holder, opening_balance, 'current')
+    def __init__(self, account_number, account_holder, opening_balance, overdraft_limit, transaction) -> None:
+        super().__init__(account_number, account_holder, opening_balance, 'current', transaction)
         self.overdraft_limit = overdraft_limit
 
     def __str__(self) -> str:
@@ -148,8 +162,8 @@ class DepositAccount(Account):
 
     """A subclass to represent a deposit account"""
 
-    def __init__(self, account_number, account_holder, opening_balance, interest_rate) -> None:
-        super().__init__(account_number, account_holder, opening_balance, 'deposit')
+    def __init__(self, account_number, account_holder, opening_balance, interest_rate, transaction) -> None:
+        super().__init__(account_number, account_holder, opening_balance, 'deposit', transaction)
         self.interest_rate = interest_rate
 
     def __str__(self) -> str:
@@ -167,8 +181,8 @@ class InvestmentAccount(Account):
 
     RISK_TYPES = ('low', 'medium', 'high')
 
-    def __init__(self, account_number, account_holder, opening_balance, risk_level) -> None:
-        super().__init__(account_number, account_holder, opening_balance, 'investment')
+    def __init__(self, account_number, account_holder, opening_balance, risk_level, transaction) -> None:
+        super().__init__(account_number, account_holder, opening_balance, 'investment', transaction)
         self.risk_level = risk_level
 
         if risk_level not in self.RISK_TYPES:
